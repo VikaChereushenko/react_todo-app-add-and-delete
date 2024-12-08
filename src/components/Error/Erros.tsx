@@ -9,7 +9,7 @@ type Props = {
 export const Error: React.FC<Props> = ({ errorMessage, hideError }) => {
   useEffect(() => {
     setTimeout(() => hideError(''), 3000);
-  }, []);
+  });
 
   return (
     <div

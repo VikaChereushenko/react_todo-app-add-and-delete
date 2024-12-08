@@ -7,9 +7,15 @@ type Props = {
   todos: Todo[];
   status: string;
   onStatusChange: (arg: string) => void;
+  clearCompletedTodos: () => void;
 };
 
-export const Footer: React.FC<Props> = ({ todos, status, onStatusChange }) => {
+export const Footer: React.FC<Props> = ({
+  todos,
+  status,
+  onStatusChange,
+  clearCompletedTodos,
+}) => {
   const activeTodos = todos.filter(todo => !todo.completed);
   const isAnyCompleted = todos.some(todo => todo.completed);
 
@@ -61,6 +67,7 @@ export const Footer: React.FC<Props> = ({ todos, status, onStatusChange }) => {
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
         disabled={!isAnyCompleted}
+        onClick={clearCompletedTodos}
       >
         Clear completed
       </button>

@@ -1,5 +1,6 @@
 import React from 'react';
-import classNames from 'classnames';
+
+import { TodoItem } from '../TodoItem/TodoItem';
 
 import { Todo } from '../../types/Todo';
 
@@ -19,49 +20,18 @@ export const TodoList: React.FC<Props> = ({
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {filteredTodos.map(todo => {
+        const { id, completed, title } = todo;
+
         return (
-          <div
-            data-cy="Todo"
-            className={classNames('todo', {
-              completed: todo.completed,
-              'todo__status-label': !todo.completed,
-            })}
-            key={todo.id}
-          >
-            <label className="todo__status-label">
-              <input
-                data-cy="TodoStatus"
-                type="checkbox"
-                className="todo__status"
-                checked={todo.completed}
-              />
-            </label>
-
-            <span data-cy="TodoTitle" className="todo__title">
-              {todo.title}
-            </span>
-
-            {/* Remove button appears only on hover */}
-            <button
-              type="button"
-              className="todo__remove"
-              data-cy="TodoDelete"
-              onClick={() => onDelete(todo.id)}
-            >
-              ×
-            </button>
-
-            {/* overlay will cover the todo while it is being deleted or updated */}
-            <div
-              data-cy="TodoLoader"
-              className={classNames('modal', 'overlay', {
-                'is-active': loading && deleteIds.includes(todo.id),
-              })}
-            >
-              <div className="modal-background has-background-white-ter" />
-              <div className="loader" />
-            </div>
-          </div>
+          <TodoItem
+            key={id}
+            id={id}
+            completed={completed}
+            title={title}
+            onItemDelete={onDelete}
+            isItemLoading={loading}
+            deleteIds={deleteIds}
+          />
         );
       })}
     </section>

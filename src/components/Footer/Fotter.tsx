@@ -2,11 +2,12 @@ import React from 'react';
 import classNames from 'classnames';
 
 import { Todo } from '../../types/Todo';
+import { TodoStatus } from '../../types/Status';
 
 type Props = {
   todos: Todo[];
-  status: string;
-  onStatusChange: (arg: string) => void;
+  status: TodoStatus;
+  onStatusChange: (arg: TodoStatus) => void;
   clearCompletedTodos: () => void;
 };
 
@@ -18,6 +19,11 @@ export const Footer: React.FC<Props> = ({
 }) => {
   const activeTodos = todos.filter(todo => !todo.completed);
   const isAnyCompleted = todos.some(todo => todo.completed);
+  const filterOptions = Object.values(TodoStatus);
+
+  const capitalizeFirstLetter = (value: TodoStatus) => {
+    return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+  };
 
   return (
     <footer className="todoapp__footer" data-cy="Footer">
@@ -27,38 +33,23 @@ export const Footer: React.FC<Props> = ({
 
       {/* Active link should have the 'selected' class */}
       <nav className="filter" data-cy="Filter">
-        <a
-          href="#/"
-          className={classNames('filter__link', {
-            selected: status === 'all',
-          })}
-          data-cy="FilterLinkAll"
-          onClick={() => onStatusChange('all')}
-        >
-          All
-        </a>
+        {filterOptions.map(option => {
+          const formattedOption = capitalizeFirstLetter(option);
 
-        <a
-          href="#/active"
-          className={classNames('filter__link', {
-            selected: status === 'active',
-          })}
-          data-cy="FilterLinkActive"
-          onClick={() => onStatusChange('active')}
-        >
-          Active
-        </a>
-
-        <a
-          href="#/completed"
-          className={classNames('filter__link', {
-            selected: status === 'completed',
-          })}
-          data-cy="FilterLinkCompleted"
-          onClick={() => onStatusChange('completed')}
-        >
-          Completed
-        </a>
+          return (
+            <a
+              href={option === 'all' ? '#/' : `#/${option}`}
+              key={option}
+              className={classNames('filter__link', {
+                selected: status === option,
+              })}
+              data-cy={`FilterLink${formattedOption}`}
+              onClick={() => onStatusChange(option)}
+            >
+              {formattedOption}
+            </a>
+          );
+        })}
       </nav>
 
       {/* this button should be disabled if there are no completed todos */}

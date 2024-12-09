@@ -1,27 +1,28 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useState, useEffect, useRef } from 'react';
-import classNames from 'classnames';
+import React, { useState, useEffect } from 'react';
 
 import { UserWarning } from './UserWarning';
 import { USER_ID } from './api/todos';
+import { Header } from './components/Header/Header';
 import { TodoList } from './components/TodoList/TodoList';
-import { TodoItem } from './components/TodoItem/TodoItem';
+import { TempTodo } from './components/TempTodo/TempTodo';
 import { Footer } from './components/Footer/Fotter';
 import { Error } from './components/Error/Erros';
 import { getTodos, addTodo, deleteTodo } from './api/todos';
 
 import { Todo } from './types/Todo';
+import { TodoStatus } from './types/Status';
 
-function filterTodos(todos: Todo[], status?: string | null) {
+function filterTodos(todos: Todo[], status: TodoStatus) {
   const todosCopy = [...todos];
 
   switch (status) {
-    case 'active':
-      return todosCopy.filter(todo => todo.completed === false);
-    case 'completed':
-      return todosCopy.filter(todo => todo.completed === true);
-    default:
+    case TodoStatus.active:
+      return todosCopy.filter(todo => !todo.completed);
+    case TodoStatus.completed:
+      return todosCopy.filter(todo => todo.completed);
+    case TodoStatus.all:
       return todosCopy;
   }
 }
@@ -29,29 +30,19 @@ function filterTodos(todos: Todo[], status?: string | null) {
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const [status, setStatus] = useState('all');
+  const [status, setStatus] = useState<TodoStatus>(TodoStatus.all);
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [deleteIds, setDeletedIds] = useState<number[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const areAllCompleted = todos.every(todo => todo.completed);
   const noTodos = todos.length === 0;
   const filteredTodos = filterTodos(todos, status);
 
   useEffect(() => {
     getTodos()
-      .then(response => {
-        setTodos(response);
-      })
+      .then(setTodos)
       .catch(() => setErrorMessage('Unable to load todos'));
   }, []);
-
-  useEffect(() => {
-    if (!loading && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [loading]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -131,31 +122,14 @@ export const App: React.FC = () => {
       <h1 className="todoapp__title">todos</h1>
 
       <div className="todoapp__content">
-        <header className="todoapp__header">
-          {!noTodos && (
-            <button
-              type="button"
-              className={classNames('todoapp__toggle-all', {
-                active: areAllCompleted,
-              })}
-              data-cy="ToggleAllButton"
-            />
-          )}
-
-          {/* Add a todo on form submit */}
-          <form onSubmit={event => handleSubmit(event)}>
-            <input
-              ref={inputRef}
-              data-cy="NewTodoField"
-              type="text"
-              className="todoapp__new-todo"
-              placeholder="What needs to be done?"
-              value={title}
-              onChange={event => setTitle(event.target.value)}
-              disabled={loading}
-            />
-          </form>
-        </header>
+        <Header
+          todos={todos}
+          noTodos={noTodos}
+          onSubmit={handleSubmit}
+          loading={loading}
+          title={title}
+          onTitleChange={value => setTitle(value)}
+        />
 
         <TodoList
           filteredTodos={filteredTodos}
@@ -164,13 +138,13 @@ export const App: React.FC = () => {
           deleteIds={deleteIds}
         />
 
-        {tempTodo && <TodoItem title={title} />}
+        {tempTodo && <TempTodo todo={tempTodo} />}
 
         {!noTodos && (
           <Footer
             todos={todos}
             status={status}
-            onStatusChange={value => setStatus(value)}
+            onStatusChange={(value: TodoStatus) => setStatus(value)}
             clearCompletedTodos={handleDeleteCompletedTodos}
           />
         )}
